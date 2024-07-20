@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>Dashboard | Simple Admin</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    {% include "CSS.html" %}
+</head>
+<body>
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-md-2">
+				<div class="col-md-2 sidebar">
+					<div class="brand">
+						<a href="#" class="brand-name">Stock Manage</a>
+					</div>
+					<div class="sidebar-sticky">
+						<ul class="nav flex-column">
+							<li class="nav-item">
+								<a href="/index" class="nav-link active"><i class="mdi mdi-monitor"></i> Dashboard</a>
+							</li>
+                            <li class="nav-item">
+                                <a href="/products" class="nav-link"><i class="mdi mdi-package-variant"></i> Product</a>
+                            </li>
+                            {% if session.get('role') == 'Admin' %}
+                            <li class="nav-item">
+                                <a href="/users" class="nav-link"><i class="mdi mdi-account-multiple"></i> Users</a>
+                            </li>
+                            {% endif %}
+{#							<li class="nav-item">#}
+{#								<a class="nav-link" data-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample"><i class="mdi mdi-shape-outline"></i> UI Components <span class="badge badge-info">New</span><i class="mdi mdi-chevron-down float-right pr-2"></i></a>#}
+{#								<div class="collapse" id="collapseExample">#}
+{#									<a class="nav-link" href="button.html"><i class="mdi mdi-circle-medium"></i> Buttons</a>#}
+{#								    <a class="nav-link" href="chart.html"><i class="mdi mdi-circle-medium"></i> Chart</a>#}
+{#								    <a class="nav-link" href="input.html"><i class="mdi mdi-circle-medium"></i> Input</a>#}
+{#								    <a class="nav-link" href="modal.html"><i class="mdi mdi-circle-medium"></i> Modal</a>#}
+{#								    <a class="nav-link" href="widget.html"><i class="mdi mdi-circle-medium"></i> Widget</a>#}
+{#								</div>#}
+{#							</li>#}
+{#							<li class="nav-item">#}
+{#								<a href="table.html" class="nav-link"><i class="mdi mdi-table"></i> Data Table <button class="btn btn-dark-base btn-rounded float-right btn-sm"><i class="mdi mdi-plus"></i></button></a>#}
+{#							</li>#}
+						</ul>
+					</div>
+					<div class="nav-bottom">
+						<ul class="nav">
+							<li class="nav-item"><a href="#" class="nav-link" id="logout-button" data-toggle="modal" data-target="#logoutModal"><i class="mdi mdi-power"></i></a></li>
+						</ul>
+					</div>
+				</div>
+			</div>
+			<main class="col-md-9 col-lg-10" role="main">
+				<div class="container">
+					<div class="content-header mt-2 mb-3">
+						<h2 class="text-header">Dashboard</h2>
+					</div>
+{#					<div class="alert alert-danger">#}
+{#						This template is under maintenance!#}
+{#					</div>#}
+					<div class="row mb-3 widget">
+						<div class="col-md-3 pr-1">
+							<div class="card alert-success">
+								<div class="card-body">
+									<div class="float-left">
+										<h3 class="value-widget">{{ total_price }}</h3>
+										<label class="title-widget">Total Amount</label>
+									</div>
+									<div class="float-right">
+										<i class="mdi mdi-cash-usd-outline mdi-48px"></i>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-3 pr-1">
+							<div class="card alert-warning">
+								<div class="card-body">
+									<div class="float-left">
+										<h3 class="value-widget">{{ total_stock }}</h3>
+										<label class="title-widget">In Stock</label>
+									</div>
+									<div class="float-right">
+										<i class="mdi mdi-cart mdi-48px"></i>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-3 pr-1">
+							<div class="card alert-primary">
+								<div class="card-body">
+									<div class="float-left">
+										<h3 class="value-widget">{{ total_emp[0][0] }}</h3>
+										<label class="title-widget">Employee</label>
+									</div>
+									<div class="float-right">
+										<i class="mdi mdi-account mdi-48px"></i>
+									</div>
+								</div>
+							</div>
+						</div>
+                        {% if session.get('role') == 'Admin' %}
+						<div class="col-md-3">
+							<div class="card alert-dark">
+								<div class="card-body">
+									<div class="float-left">
+										<h3 class="value-widget">{{ total_staff[0][0] }}</h3>
+										<label class="title-widget">Total Staff</label>
+									</div>
+									<div class="float-right">
+										<i class="mdi mdi-account-key mdi-48px"></i>
+									</div>
+								</div>
+							</div>
+						</div>
+                        {% endif %}
+					</div>
+
+					<div class="row basic mb-3">
+						<div class="col-md-6 pr-1">
+							<div class="card">
+								<div class="card-body pb-0">
+									<label class="title-body">Product Chart</label>
+									<canvas id="productChart" style="width: 100%"></canvas>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="card">
+								<div class="card-body">
+                                    {% if session.get('role') == 'Admin' %}
+									<label class="title-body">
+                                        User Chart
+                                    </label>
+                                    {% endif %}
+									<canvas id="userChart" style="width: 100%"></canvas>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</main>
+		</div>
+	</div>
+    {% include "logout.html" %}
+    {% include "Footer.html" %}
+    <script>
+        // Get product data from Flask
+        const products = {{ products | tojson }};
+        // Extract data for Chart.js
+        const labels = products.map(product => `${product[1]} - $${product[3]}`);
+        const data = products.map(product => product[2]);
+        // Create the chart
+        const ctx = document.getElementById('productChart').getContext('2d');
+        const ucx = document.getElementById('userChart').getContext('2d');
+        const productChart = new Chart(ctx, {
+            type: 'bar', // Type of chart (e.g., 'bar', 'line', 'pie', etc.)
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Product Quantities',
+                    data: data,
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+
+        {% if session.get('role') == 'Admin' %}
+        // Get users data from Flask
+        const users = {{ users | tojson }}
+        // Extract data for Chart.js
+        const user_role = users.map(user => user[0]);
+        const user_count = users.map(user => user[1])
+        // Creat the Chart
+        const userChart = new Chart(ucx, {
+           type: 'bar',
+           data: {
+               labels: user_role,
+                datasets: [{
+                    label: 'Number of Users',
+                    data: user_count,
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        {% endif %}
+    </script>
+</body>
+</html>

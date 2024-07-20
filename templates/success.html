@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    {% include "CSS.html" %}
+</head>
+<body class="bg-water-mid login-body">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-4 mt-5">
+                <h2 class="text-center mb-5 text-white">Login Successful</h2>
+                <div class="card mb-5 a-card">
+                    <div class="card-body text-center">
+                        <p>Welcome, {{ username }}! You have successfully logged in!</p>
+                        <a href="{{ url_for('logout') }}" class="btn btn-water-mid">Logout</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% include "Footer.html" %}
+</body>
+</html>
